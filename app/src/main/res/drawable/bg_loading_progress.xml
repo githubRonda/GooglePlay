@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+    layer-list : 层叠效果
+    让两张图片旋转, 这两张图片其实就是一样的,就是镜面翻转了一下
+    方向相反, 一快一慢(默认时间是固定的,可以旋转的范围)
+    (根据旋转方向和速度还可以调出更多的效果)
+    -->
+
+    <item>
+        <rotate
+            android:drawable="@drawable/spinner_big_inner"
+            android:fromDegrees="0"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:toDegrees="720"
+            />
+    </item>
+
+    <item>
+        <rotate
+            android:drawable="@drawable/spinner_big_outer"
+            android:fromDegrees="0"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:toDegrees="-360"
+            />
+    </item>
+</layer-list>
