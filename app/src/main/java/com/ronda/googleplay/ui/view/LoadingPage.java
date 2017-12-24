@@ -3,7 +3,9 @@ package com.ronda.googleplay.ui.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.ronda.googleplay.R;
 import com.ronda.googleplay.utils.UIUtils;
@@ -60,6 +62,14 @@ public abstract class LoadingPage extends FrameLayout {
         // 初始化加载失败布局
         if (mLoadErrorPage == null) {
             mLoadErrorPage = UIUtils.inflate(R.layout.page_load_error);
+            mLoadErrorPage.findViewById(R.id.btn_retry).setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //重新加载网络数据
+                    loadData();
+                }
+            });
+
             addView(mLoadErrorPage);
         }
 

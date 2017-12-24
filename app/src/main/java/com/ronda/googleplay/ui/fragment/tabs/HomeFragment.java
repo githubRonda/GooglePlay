@@ -40,7 +40,6 @@ public class HomeFragment extends BaseFragment {
 
         listView.setAdapter(new HomeAdapter());
 
-
         return listView;
     }
 
@@ -56,9 +55,12 @@ public class HomeFragment extends BaseFragment {
         String result = HttpHelper.get("home", params);
 
         AppInfoBean appInfoBean = GsonUtil.getGson().fromJson(result, AppInfoBean.class);
-        mData = appInfoBean.getList();
-
-        return checkRequestResult(mData);
+        if (appInfoBean == null) {
+            return LoadingPage.ResultState.STATE_ERROR;
+        } else {
+            mData = appInfoBean.getList();
+            return checkRequestResult(mData);
+        }
     }
 
     class HomeAdapter extends CommonAdapter<AppInfoBean.ListBean> {
@@ -76,6 +78,9 @@ public class HomeFragment extends BaseFragment {
             params.put("index", getDataSize()); // 在当前获取的数据的个数的基础上再加载下一页数据
             String result = HttpHelper.get("home", params);
             AppInfoBean appInfoBean = GsonUtil.getGson().fromJson(result, AppInfoBean.class);
+            if (appInfoBean == null){
+                return null;
+            }
             return appInfoBean.getList();
         }
 

@@ -167,6 +167,10 @@ BaseAdapter中 使用多类型的ItemView时要注意 定义的条目类型(getI
 	}
 
 
+## 自定义布局使得ImageView的长宽按固定比例显示图片
+思路: 我们并不继承ImageView, 而是继承FrameLayout, 让FrameLayout的宽高按比例显示, 而内部的内容匹配父布局即可.
+
+好处: 1. 适用性更广, 内部View可以是任何View, 而不仅仅是ImageView; 2. 继承FrameLayout要比继承ImageView简单
 
 BaseAdapter中 使用多类型的ItemView时要注意 定义的条目类型(getItemViewType())要从0开始依次递增, 否则AbsListView中就会报ArrayIndexOutOfBoundsException(数组越界异常)
 
