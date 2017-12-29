@@ -30,4 +30,10 @@ public class ExampleUnitTest {
             System.out.println("key: " + key + ", value: " + value);
         }
     }
+
+    @Test
+    public void fun1() throws Exception {
+
+        System.out.println(-4 % 5);
+    }
 }
