@@ -23,8 +23,8 @@ import java.util.List;
 public abstract class CommonAdapter<T> extends BaseAdapter {
 
     //注意: 此处必须要从0开始写, 否则AbsListView中就会报ArrayIndexOutOfBoundsException(数组越界异常)
-    private static final int TYPE_NORMAL = 0;// 正常布局类型
-    private static final int TYPE_MORE = 1;// 加载更多类型
+    private static final int TYPE_MORE = 0;// 加载更多类型
+    private static final int TYPE_NORMAL = 1;// 正常布局类型. 这里 TYPE_MORE 的值最好为0, 而 TYPE_NORMAL 的值最好为1, 便于子类复写 getInnerType() 方法时直接使用 super.getInnerType(position)+1;
 
     // 加载更多的几种状态
     public static final int STATE_MORE_MORE = 1; //可以加载更多
@@ -39,13 +39,25 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
     protected List<T> mDatas;
     protected LayoutInflater mInflater; //这个其实没有用上，
     protected int layoutId;
+    protected int[] layoutIds;
     private ViewHolder LoadMoreItemHolder;
 
 
-    public CommonAdapter(Context context, List<T> datas, int layoutId) {
+    /**
+     * 这里要注意第三个形参 layoutId 的含义, 是一个不定形参
+     * 一般情况下:只需要传入一个layoutId 表示 TYPE_NORMAL 类型的item即可;
+     * 但若是子类需要除了 TYPE_MORE 和 TYPE_NORMAL 之外的其他item类型,则需要传入包括 TYPE_MORE 的在内的多个item的布局
+     * 另外,子类若是多布局类型,则 {@link getItemViewType(int)} 返回的值必须是连续的.否则就会角标越界.
+     * 所以建议子类在复写 getInnerType(int) 方法增加新的item类型时, 建议使用 super.getInnerType(position) + 1 的这种形式
+     * layoutId[0] --> super.getInnerType(position) 的返回值 即 TYPE_NORMAL
+     * layoutId[1] --> super.getInnerType(position) + 1
+     * layoutId[2] --> super.getInnerType(position) + 2
+     * ...
+     */
+    public CommonAdapter(Context context, List<T> datas, int... layoutId) {
         mContext = context;
         mDatas = (datas != null ? datas : new ArrayList<T>());
-        this.layoutId = layoutId;
+        this.layoutIds = layoutId;
         mInflater = LayoutInflater.from(context);
 
         mLoadMoreState = hasMore ? STATE_MORE_MORE : STATE_MORE_NONE;
@@ -95,11 +107,16 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (getItemViewType(position) == TYPE_NORMAL) {
-            ViewHolder holder = ViewHolder.getViewHolder(mContext, convertView, parent, layoutId, position);
-
-            convert(holder, getItem(position));
-
+//        if (getItemViewType(position) == TYPE_NORMAL) {
+//            ViewHolder holder = ViewHolder.getViewHolder(mContext, convertView, parent, layoutId, position);
+//
+//            convert(holder, getItem(position));
+//
+//            return holder.getConvertView();
+//        }
+        if (getItemViewType(position) != TYPE_MORE) {
+            ViewHolder holder = ViewHolder.getViewHolder(mContext, convertView, parent, layoutIds[getItemViewType(position) - 1], position);
+            convert(holder, getItem(position), position);
             return holder.getConvertView();
         } else {
             LoadMoreItemHolder = ViewHolder.getViewHolder(mContext, convertView, parent, R.layout.item_load_more, position);
@@ -108,7 +125,7 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
             // TODO: 2017/11/27/0027 更新UI, 显示或隐藏, 并且加载更多数据
             updateLoadMoreViewState(mLoadMoreState);
 
-            if (mLoadMoreState == STATE_MORE_MORE){
+            if (mLoadMoreState == STATE_MORE_MORE) {
                 // 请求加载更多数据
                 loadMore();
             }
@@ -189,13 +206,13 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
 
     /**
      * 获取Adapter中数据部分的条目的大小
+     *
      * @return
      */
-    public int getDataSize(){
-        if (mDatas != null){
+    public int getDataSize() {
+        if (mDatas != null) {
             return mDatas.size();
-        }
-        else{
+        } else {
             return 0;
         }
     }
@@ -207,12 +224,14 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
      */
     public void setHasMore(boolean hasMore) {
         this.hasMore = hasMore;
+        mLoadMoreState = hasMore ? STATE_MORE_MORE : STATE_MORE_NONE;
     }
 
 
     /**
      * 加载更多数据, 必须由子类实现
      * 子线程中执行
+     *
      * @return
      */
     public abstract List<T> onLoadMore();
@@ -223,5 +242,5 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
      * @param holder
      * @param bean
      */
-    public abstract void convert(ViewHolder holder, T bean);
+    public abstract void convert(ViewHolder holder, T bean, int position);
 }

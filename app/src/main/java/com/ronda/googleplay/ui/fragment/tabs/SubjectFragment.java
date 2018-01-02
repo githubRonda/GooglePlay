@@ -82,7 +82,7 @@ public class SubjectFragment extends BaseFragment {
         }
 
         @Override
-        public void convert(ViewHolder holder, SubjectBean bean) {
+        public void convert(ViewHolder holder, SubjectBean bean, int position) {
             holder.setText(R.id.tv_des, bean.getDes());
 
             x.image().bind(((ImageView) holder.getView(R.id.iv_icon)), HttpHelper.URL + "image?name=" + bean.getUrl(),imageOptions );

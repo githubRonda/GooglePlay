@@ -74,7 +74,7 @@ public class AppFragment extends BaseFragment {
         }
 
         @Override
-        public void convert(ViewHolder holder, AppInfoBean.ListBean bean) {
+        public void convert(ViewHolder holder, AppInfoBean.ListBean bean, int position) {
             holder.setText(R.id.tv_name, bean.getName());
             holder.setRating(R.id.rb_star, bean.getStars());
             holder.setText(R.id.tv_size, Formatter.formatFileSize(UIUtils.getContext(), bean.getSize()));

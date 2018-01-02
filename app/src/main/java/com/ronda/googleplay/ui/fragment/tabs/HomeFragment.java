@@ -85,7 +85,7 @@ public class HomeFragment extends BaseFragment {
         }
 
         @Override
-        public void convert(ViewHolder holder, AppInfoBean.ListBean bean) {
+        public void convert(ViewHolder holder, AppInfoBean.ListBean bean, int position) {
             //holder.setText(R.id.tv, bean.getName());
 
             //holder.setImageResource()
