@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static android.R.attr.padding;
+
 /**
  * Author: Ronda(1575558177@qq.com)
  * Date: 2017/11/25
@@ -46,6 +48,7 @@ public class HotFragment extends BaseFragment {
         flowLayout.setPadding(padding, padding, padding, padding); //内边距
         flowLayout.setHorizontalSpacing(UIUtils.dip2px(6)); // 水平间距
         flowLayout.setVerticalSpacing(UIUtils.dip2px(8)); // 垂直间距
+//        MyFlowLayout flowLayout = new MyFlowLayout(UIUtils.getContext());
 
         for (String s : mData) {
             final TextView textView = new TextView(UIUtils.getContext());

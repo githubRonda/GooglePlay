@@ -120,6 +120,7 @@ public class UIUtils {
             runnable.run();
         } else {
             // 如果是子线程, 借助handler让其运行在主线程
+            getHandler().removeCallbacks(runnable);
             getHandler().post(runnable);
         }
     }

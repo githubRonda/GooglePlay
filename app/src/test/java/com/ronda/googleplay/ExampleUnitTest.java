@@ -34,6 +34,12 @@ public class ExampleUnitTest {
     @Test
     public void fun1() throws Exception {
 
-        System.out.println(-4 % 5);
+//        System.out.println(-4 % 5);
+
+        int surplusWidth = 4;
+        int count = 6;
+        int splitSpacing = (int) (1.0*surplusWidth / count + 0.5);
+
+        System.out.println("splitSpacing: "+splitSpacing);
     }
 }

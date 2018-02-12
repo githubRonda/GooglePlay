@@ -79,11 +79,17 @@
                 android:orientation="vertical"
                 >
 
-                <ImageView
+                <!--<ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/action_download"
-                    />
+                    />-->
+                <FrameLayout
+                    android:id="@+id/fl_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    >
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tv_download"

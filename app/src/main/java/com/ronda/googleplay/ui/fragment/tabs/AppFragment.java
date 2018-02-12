@@ -1,6 +1,5 @@
 package com.ronda.googleplay.ui.fragment.tabs;
 
-import android.content.Context;
 import android.text.format.Formatter;
 import android.view.View;
 import android.widget.ImageView;
@@ -8,7 +7,7 @@ import android.widget.ImageView;
 import com.google.gson.reflect.TypeToken;
 import com.ronda.googleplay.R;
 import com.ronda.googleplay.http.HttpHelper;
-import com.ronda.googleplay.http.bean.AppInfoBean;
+import com.ronda.googleplay.http.bean.AppInfo;
 import com.ronda.googleplay.http.gson.GsonUtil;
 import com.ronda.googleplay.ui.adapter.CommonAdapter;
 import com.ronda.googleplay.ui.adapter.ViewHolder;
@@ -33,7 +32,7 @@ import java.util.Map;
 
 public class AppFragment extends BaseFragment {
 
-    private List<AppInfoBean.ListBean> mData;
+    private List<AppInfo> mData;
 
     @Override
     public View onCreateSuccessView() {
@@ -50,31 +49,31 @@ public class AppFragment extends BaseFragment {
         Map<String, Object> params = new HashMap<>();
         params.put("index", 0);
         String result = HttpHelper.get("app", params);
-        List<AppInfoBean.ListBean> mData = GsonUtil.getGson().fromJson(result, new TypeToken<List<AppInfoBean.ListBean>>() {
+        List<AppInfo> mData = GsonUtil.getGson().fromJson(result, new TypeToken<List<AppInfo>>() {
         }.getType());
 
         return checkRequestResult(mData);
     }
 
-    class MyAdapter extends CommonAdapter<AppInfoBean.ListBean>{
+    class MyAdapter extends CommonAdapter<AppInfo>{
 
         public MyAdapter() {
             super(UIUtils.getContext(), mData, R.layout.item_home);
         }
 
         @Override
-        public List<AppInfoBean.ListBean> onLoadMore() {
+        public List<AppInfo> onLoadMore() {
             Map<String, Object> params = new HashMap<>();
             params.put("index", getDataSize());
             String result = HttpHelper.get("app", params);
-            List<AppInfoBean.ListBean> moreData = GsonUtil.getGson().fromJson(result, new TypeToken<List<AppInfoBean.ListBean>>() {
+            List<AppInfo> moreData = GsonUtil.getGson().fromJson(result, new TypeToken<List<AppInfo>>() {
             }.getType());
 
             return moreData;
         }
 
         @Override
-        public void convert(ViewHolder holder, AppInfoBean.ListBean bean, int position) {
+        public void convert(ViewHolder holder, AppInfo bean, int position) {
             holder.setText(R.id.tv_name, bean.getName());
             holder.setRating(R.id.rb_star, bean.getStars());
             holder.setText(R.id.tv_size, Formatter.formatFileSize(UIUtils.getContext(), bean.getSize()));

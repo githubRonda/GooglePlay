@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">GooglePlay</string>
+    <string name="drawer_close">close drawer</string>
+    <string name="drawer_open">open drawer</string>
 
     <string-array name="tab_names">
         <item>首页</item>

@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.ronda.googleplay.R;
+import com.ronda.googleplay.manager.ThreadPool;
 import com.ronda.googleplay.utils.UIUtils;
 
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ import java.util.List;
  * Author: Ronda(1575558177@qq.com)
  * Date: 2017/11/26
  * Version: v1.0
+ *
+ * 待优化:
+ * 1. 可自定义ViewHolder. Adapter 和 ViewHolder 耦合度太高, 可以提供一个默认的ViewHolder,但也要暴露一个自定义ViewHolder的接口
  */
 
 public abstract class CommonAdapter<T> extends BaseAdapter {
@@ -47,7 +51,7 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
      * 这里要注意第三个形参 layoutId 的含义, 是一个不定形参
      * 一般情况下:只需要传入一个layoutId 表示 TYPE_NORMAL 类型的item即可;
      * 但若是子类需要除了 TYPE_MORE 和 TYPE_NORMAL 之外的其他item类型,则需要传入包括 TYPE_MORE 的在内的多个item的布局
-     * 另外,子类若是多布局类型,则 {@link getItemViewType(int)} 返回的值必须是连续的.否则就会角标越界.
+     * 另外,子类若是多布局类型,则 {@link CommonAdapter#getItemViewType(int)} 返回的值必须是连续的.否则就会角标越界.
      * 所以建议子类在复写 getInnerType(int) 方法增加新的item类型时, 建议使用 super.getInnerType(position) + 1 的这种形式
      * layoutId[0] --> super.getInnerType(position) 的返回值 即 TYPE_NORMAL
      * layoutId[1] --> super.getInnerType(position) + 1
@@ -171,7 +175,40 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
         }
 
         isLoadingMore = true;
-        new Thread() {
+//        new Thread() {
+//            @Override
+//            public void run() {
+//
+//                final List<T> moreData = onLoadMore();
+//
+//                UIUtils.runOnUIThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (moreData == null) {
+//                            updateLoadMoreViewState(STATE_MORE_ERROR);
+//                        } else {
+//                            // 后台定义的每一页有20条数据(实测有些页面有21条数据), 如果返回的数据小于20条, 就认为到了最后一页了
+//                            // 其实也存在刚好这个页面有20条,然后之后就没有数据了. 对于这种情况用户无非就是用户再滑动加载一次,发现下一页数据为0,也是小于20的
+//                            if (moreData.size() < 20) {
+//                                updateLoadMoreViewState(STATE_MORE_NONE);
+//                                Toast.makeText(UIUtils.getContext(), "没有更多数据了", Toast.LENGTH_SHORT).show();
+//                            } else {
+//                                // 还有更多数据
+//                                updateLoadMoreViewState(STATE_MORE_MORE);
+//                            }
+//
+//                            mDatas.addAll(moreData);// 将更多数据追加到当前集合中
+//                            notifyDataSetChanged(); // 刷新界面
+//                        }
+//                    }
+//                });
+//
+//                isLoadingMore = false;
+//            }
+//        }.start();
+
+        // 使用线程池来改造
+        ThreadPool.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
 
@@ -201,7 +238,7 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
 
                 isLoadingMore = false;
             }
-        }.start();
+        });
     }
 
     /**

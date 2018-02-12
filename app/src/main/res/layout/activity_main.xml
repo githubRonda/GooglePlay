@@ -1,24 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     >
 
-    <com.ronda.googleplay.ui.view.PagerTab
-        android:id="@+id/pager_tab"
-        android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:background="@drawable/bg_tab"
-        />
-    <!--android:background="@drawable/bg_tab" 背景必须要设置,否则可能会有bug-->
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/view_pager"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        android:orientation="vertical"
+        >
 
-</LinearLayout>
+        <com.ronda.googleplay.ui.view.PagerTab
+            android:id="@+id/pager_tab"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_tab"
+            />
+        <!--android:background="@drawable/bg_tab" 背景必须要设置,否则可能会有bug-->
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+    </LinearLayout>
+
+    <!--侧边栏-->
+    <FrameLayout
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:background="#000"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="我是侧边栏"
+            android:textColor="#fff"
+            android:textSize="22sp"
+            />
+
+    </FrameLayout>
+</android.support.v4.widget.DrawerLayout>

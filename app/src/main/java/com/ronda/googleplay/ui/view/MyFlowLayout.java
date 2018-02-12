@@ -1,239 +1,267 @@
 package com.ronda.googleplay.ui.view;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.ronda.googleplay.utils.UIUtils;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 public class MyFlowLayout extends ViewGroup {
 
-    private int mUsedWidth;// 当前行已使用的宽度
-    private int mHorizontalSpacing = UIUtils.dip2px(6);// 水平间距
-    private int mVerticalSpacing = UIUtils.dip2px(8);// 竖直间距
+    private int mUsedWidth;
+    private int mHorizontalSpacing = UIUtils.dip2px(6);
+    private int mVerticalSpacing = UIUtils.dip2px(8);
 
-    private Line mLine;// 当前行对象
+    private List<Line> mLineList = new ArrayList<>();
 
-    private ArrayList<Line> mLineList = new ArrayList<Line>();// 维护所有行的集合
+    private Line mLine;
 
     private static final int MAX_LINE = 100;// 最大行数是100行
 
-    public MyFlowLayout(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public MyFlowLayout(Context context) {
+        super(context);
     }
 
     public MyFlowLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MyFlowLayout(Context context) {
-        super(context);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int left = l + getPaddingLeft();
-        int top = t + getPaddingTop();
-
-        // 遍历所有行对象, 设置每行位置
-        for (int i = 0; i < mLineList.size(); i++) {
-            Line line = mLineList.get(i);
-            line.layout(left, top);
-
-            top += line.mMaxHeight + mVerticalSpacing;// 更新top值
-        }
+    public MyFlowLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // 获取有效宽度
-        int width = MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft()
-                - getPaddingRight();
-        // 获取有效高度
-        int height = MeasureSpec.getSize(heightMeasureSpec) - getPaddingTop()
-                - getPaddingBottom();
 
-        // 获取宽高模式
+        // 有效宽度和高度
+        int width = MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft() - getPaddingRight();
+        int height = MeasureSpec.getSize(heightMeasureSpec) - getPaddingTop() - getPaddingBottom();
+
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
 
-        int childCount = getChildCount();// 获取所有子控件数量
-        for (int i = 0; i < childCount; i++) {
-            View childView = getChildAt(i);
 
-            // 如果父控件是确定模式, 子控件包裹内容;否则子控件模式和父控件一致
-            int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width,
-                    (widthMode == MeasureSpec.EXACTLY) ? MeasureSpec.AT_MOST
-                            : widthMode);
-            int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height,
-                    (heightMode == MeasureSpec.EXACTLY) ? MeasureSpec.AT_MOST
-                            : heightMode);
+        // 测量子控件宽度进行比较
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            View child = getChildAt(i);
+            if (child.getVisibility() == GONE) {
+                continue;
+            }
+            int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width, (widthMode == MeasureSpec.EXACTLY) ? MeasureSpec.AT_MOST : widthMode);
+            int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, (heightMode == MeasureSpec.EXACTLY) ? MeasureSpec.AT_MOST : heightMode);
 
-            // 开始测量
-            childView.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+            child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
-            // 如果当前行对象为空, 初始化一个行对象
+            int measuredWidth = child.getMeasuredWidth();
+
+
             if (mLine == null) {
                 mLine = new Line();
+                mUsedWidth = 0;
             }
 
-            // 获取子控件宽度
-            int childWidth = childView.getMeasuredWidth();
+            mUsedWidth += measuredWidth;
 
-            mUsedWidth += childWidth;// 已使用宽度增加一个子控件宽度
 
-            if (mUsedWidth < width) {// 判断是否超出了边界
-                mLine.addView(childView);// 更当前行对象添加子控件
+            // 判断边界
+            if (mUsedWidth <= width) {
+                mLine.addView(child);
 
-                mUsedWidth += mHorizontalSpacing;// 增加一个水平间距
+                mUsedWidth += mHorizontalSpacing;
 
-                if (mUsedWidth > width) {
-                    // 增加水平间距之后, 就超出了边界, 此时需要换行
+                // 再次判断边界
+                if (mUsedWidth >= width) {
                     if (!newLine()) {
-                        break;// 如果创建行失败,就结束循环,不再添加
+                        break;
                     }
                 }
+            } else { // 超出边界(两种具体情况)
+                if (mLine.getChildCount() == 0) {// 一行中的第一个VIew就超出了边界
 
-            } else {
-                // 已超出边界
-                // 1.当前没有任何控件, 一旦添加当前子控件, 就超出边界(子控件很长)
-                if (mLine.getChildCount() == 0) {
-                    mLine.addView(childView);// 强制添加到当前行
-
-                    if (!newLine()) {// 换行
+                    mLine.addView(child);
+                    if (!newLine()) {
                         break;
                     }
                 } else {
-                    // 2.当前有控件, 一旦添加, 超出边界
-                    if (!newLine()) {// 换行
+                    if (!newLine()) {
                         break;
                     }
-
-                    mLine.addView(childView);
-                    mUsedWidth += childWidth + mHorizontalSpacing;// 更新已使用宽度
+                    mLine.addView(child);
+                    mUsedWidth += child.getMeasuredWidth() + mHorizontalSpacing;
                 }
             }
-
         }
 
-        // 保存最后一行的行对象
-        if (mLine != null && mLine.getChildCount() != 0
-                && !mLineList.contains(mLine)) {
+
+
+        if (mLine != null && mLine.getChildCount() != 0 && !mLineList.contains(mLine)) {
             mLineList.add(mLine);
         }
 
-        int totalWidth = MeasureSpec.getSize(widthMeasureSpec);// 控件整体宽度
+        int totalWidth = MeasureSpec.getSize(widthMeasureSpec);
 
-        int totalHeight = 0;// 控件整体高度
+        int totalHeight = 0;
         for (int i = 0; i < mLineList.size(); i++) {
-            Line line = mLineList.get(i);
-            totalHeight += line.mMaxHeight;
+            totalHeight += mLineList.get(i).mHeight;
         }
 
-        totalHeight += (mLineList.size() - 1) * mVerticalSpacing;// 增加竖直间距
-        totalHeight += getPaddingTop() + getPaddingBottom();// 增加上下边距
+        totalHeight += mVerticalSpacing * (mLineList.size() - 1);
+
+        totalHeight+= getPaddingTop()  + getPaddingBottom();
 
         // 根据最新的宽高来测量整体布局的大小
         setMeasuredDimension(totalWidth, totalHeight);
-        // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(totalWidth, resolveSize(totalHeight, heightMeasureSpec));
+
     }
 
-    // 换行
     private boolean newLine() {
-        mLineList.add(mLine);// 保存上一行数据
-
-        if (mLineList.size() < MAX_LINE) {
-            // 可以继续添加
+        mLineList.add(mLine);
+        if (mLineList != null || mLineList.size() < MAX_LINE) {
             mLine = new Line();
-            mUsedWidth = 0;// 已使用宽度清零
-
-            return true;// 创建行成功
+            mUsedWidth = 0;
+            return true;
         }
-
-        return false;// 创建行失败
+        return false;
     }
 
-    // 每一行的对象封装
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        int leftOffset = l + getPaddingLeft();
+        int topOffset = t + getPaddingTop();
+
+        for (int i = 0; i < mLineList.size(); i++) {
+
+            Line line = mLineList.get(i);
+            line.layout(leftOffset, topOffset);
+
+            topOffset += line.mHeight + mVerticalSpacing;
+        }
+    }
+
+
     class Line {
+        private int mHeight;
+        private int mTotalWidth;
+        private List<View> mChildViewList = new ArrayList<>();
 
-        private int mTotalWidth;// 当前所有控件总宽度
-        public int mMaxHeight;// 当前控件的高度(以最高的控件为准)
 
-        private ArrayList<View> mChildViewList = new ArrayList<View>();// 当前行所有子控件集合
-
-        // 添加一个子控件
         public void addView(View view) {
             mChildViewList.add(view);
-            // 总宽度增加
             mTotalWidth += view.getMeasuredWidth();
-
-            int height = view.getMeasuredHeight();
-            // 0 10 20 10
-            mMaxHeight = mMaxHeight < height ? height : mMaxHeight;
+            mHeight = (mHeight < view.getMeasuredHeight()) ? view.getMeasuredHeight() : mHeight; // 取最大的高度
         }
 
         public int getChildCount() {
             return mChildViewList.size();
         }
 
-        // 子控件位置设置
-        public void layout(int left, int top) {
+        public void layout(int l, int t) {
+            int left = l;
+            int top = t;
+
             int childCount = getChildCount();
 
-            // 将剩余空间分配给每个子控件
-            int validWidth = getMeasuredWidth() - getPaddingLeft()
-                    - getPaddingRight();// 屏幕总有效宽度
-            // 计算剩余宽度
-            int surplusWidth = validWidth - mTotalWidth - (childCount - 1)
-                    * mHorizontalSpacing;
+            int validWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
 
-            if (surplusWidth >= 0) {
-                // 有剩余空间
-                int space = (int) ((float) surplusWidth / childCount + 0.5f);// 平均每个控件分配的大小
+            int surplusWidth = validWidth - mTotalWidth - mHorizontalSpacing * (childCount - 1);
 
-                // 重新测量子控件
+            if (surplusWidth > 0) {
+                // 有剩余空间, 需要平分
+                int space = (int) (surplusWidth * 1.0 / childCount + 0.5);
+
                 for (int i = 0; i < childCount; i++) {
                     View childView = mChildViewList.get(i);
-
                     int measuredWidth = childView.getMeasuredWidth();
                     int measuredHeight = childView.getMeasuredHeight();
 
-                    measuredWidth += space;// 宽度增加
+                    measuredWidth += space;
 
-                    int widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            measuredWidth, MeasureSpec.EXACTLY);
-                    int heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            measuredHeight, MeasureSpec.EXACTLY);
+                    Log.e("Liu", "measuredWidth: " + measuredWidth+", measuredHeight: "+measuredHeight);
 
-                    // 重新测量控件
-                    childView.measure(widthMeasureSpec, heightMeasureSpec);
+                    if (space > 0) {
+                        // 需重测子view
+                        int widthMeasureSpec = MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY);
+                        int heightMeasureSpec = MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY);
 
-                    // 当控件比较矮时,需要居中展示, 竖直方向需要向下有一定偏移
-                    int topOffset = (mMaxHeight - measuredHeight) / 2;
+                        childView.measure(widthMeasureSpec, heightMeasureSpec);
+                    }
 
+                    int topOffset = (int) ((mHeight - measuredHeight) / 2.0 + 0.5);
                     if (topOffset < 0) {
                         topOffset = 0;
                     }
 
-                    // 设置子控件位置
-                    childView.layout(left, top + topOffset, left
-                            + measuredWidth, top + topOffset + measuredHeight);
-                    left += measuredWidth + mHorizontalSpacing;// 更新left值
+                    childView.layout(left, top+ topOffset, left + measuredWidth, top + topOffset + measuredHeight);
+
+                    Log.w("Liu", " top + topOffset + measuredHeight: "+ (top + topOffset + measuredHeight));
+                    left += measuredWidth + mHorizontalSpacing;
                 }
 
             } else {
-                // 这个控件很长, 占满整行
-                View childView = mChildViewList.get(0);
-                childView.layout(left, top,
-                        left + childView.getMeasuredWidth(),
-                        top + childView.getMeasuredHeight());
+                if (childCount == 1) {
+                    View view = mChildViewList.get(0);
+                    view.layout(left, top, left + view.getMeasuredWidth(), top + view.getMeasuredHeight());
+                }
             }
 
+//            int left = l;
+//            int top = t;
+//            int count = getChildCount();
+//            // 总宽度
+//            int layoutWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
+//            // 剩余的宽度，是除了View和间隙的剩余空间
+//            int surplusWidth = layoutWidth - mTotalWidth - mHorizontalSpacing * (count - 1);
+//            if (surplusWidth >= 0) {// 有剩余空间
+//
+//                // 采用float类型数据计算后四舍五入能减少int类型计算带来的误差
+//                int splitSpacing = (int) (1.0 * surplusWidth / count + 0.5); // 平均每个空间分配剩余空间的大小
+//
+//                // 重新测量子控件
+//                for (int i = 0; i < count; i++) {
+//                    final View childView = mChildViewList.get(i);
+//                    int childWidth = childView.getMeasuredWidth();
+//                    int childHeight = childView.getMeasuredHeight();
+//
+//                    // 把剩余空间平均到每个View上
+//                    childWidth = childWidth + splitSpacing;
+//                    childView.getLayoutParams().width = childWidth;// 这句可以不要, 下面本来就是使用新的childWidth的测量的
+//                    if (splitSpacing > 0) {// View的长度改变了，需要重新measure
+//                        int widthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY);
+//                        int heightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY);
+//                        // 从新测量控件
+//                        childView.measure(widthMeasureSpec, heightMeasureSpec);
+//                    }
+//
+//                    // 当一行中的各个子View 高度不一时, 要计算top偏移量进行居中显示子View
+//                    // 计算出每个View的顶点，是由最高的View和该View高度的差值除以2
+//                    int topOffset = (int) ((mHeight - childHeight) / 2.0 + 0.5); // (行高 - 子view 的高度) / 2
+//                    if (topOffset < 0) {
+//                        topOffset = 0;
+//                    }
+//
+//                    // 布局View
+//                    childView.layout(left, top + topOffset, left + childWidth, top + topOffset + childHeight);
+//                    left += childWidth + mHorizontalSpacing; // 为下一个View的left赋值
+//                }
+//            } else {
+//                // 这个控件很长, 占满整行
+//                if (count == 1) {
+//                    View view = mChildViewList.get(0);
+//                    view.layout(left, top, left + view.getMeasuredWidth(), top + view.getMeasuredHeight());
+//                } else {
+//                    // 走到这里来，应该是代码出问题了，目前按照逻辑来看，是不可能走到这一步
+//                }
+//            }
+
+
         }
-
     }
-
 }

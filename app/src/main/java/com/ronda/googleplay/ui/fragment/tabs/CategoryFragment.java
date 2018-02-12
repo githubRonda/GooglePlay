@@ -134,11 +134,11 @@ public class CategoryFragment extends BaseFragment {
                     Toast.makeText(mContext, text1, Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.ll_grid2:
-                    String text2 = ((TextView) v.findViewById(R.id.tv_name1)).getText().toString();
+                    String text2 = ((TextView) v.findViewById(R.id.tv_name2)).getText().toString();
                     Toast.makeText(mContext, text2, Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.ll_grid3:
-                    String text3 = ((TextView) v.findViewById(R.id.tv_name1)).getText().toString();
+                    String text3 = ((TextView) v.findViewById(R.id.tv_name3)).getText().toString();
                     Toast.makeText(mContext, text3, Toast.LENGTH_SHORT).show();
                     break;
             }

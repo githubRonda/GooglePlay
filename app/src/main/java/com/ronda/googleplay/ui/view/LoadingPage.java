@@ -8,6 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.ronda.googleplay.R;
+import com.ronda.googleplay.manager.ThreadPool;
 import com.ronda.googleplay.utils.UIUtils;
 
 /**
@@ -112,10 +113,10 @@ public abstract class LoadingPage extends FrameLayout {
         if (mCurrentState != STATE_LOADING) { // 如果当前没有加载, 就开始加载数据
             mCurrentState = STATE_LOADING;
 
-            new Thread() {
+            // 使用线程池来加载数据
+            ThreadPool.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-
                     final ResultState resultState = onLoad();
                     //主线程中更新UI
                     UIUtils.runOnUIThread(new Runnable() {
@@ -130,7 +131,27 @@ public abstract class LoadingPage extends FrameLayout {
                         }
                     });
                 }
-            }.start();
+            });
+
+//            new Thread() {
+//                @Override
+//                public void run() {
+//
+//                    final ResultState resultState = onLoad();
+//                    //主线程中更新UI
+//                    UIUtils.runOnUIThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            if (resultState != null) {
+//                                mCurrentState = resultState.getState();// 网络加载结束后,更新网络状态
+//
+//                                // 根据最新的状态来刷新页面
+//                                showRightPage();
+//                            }
+//                        }
+//                    });
+//                }
+//            }.start();
         }
     }
 
